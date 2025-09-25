@@ -1,5 +1,6 @@
-// Use drop zone styles
+// Import component styles using modern @use syntax
 @use './dropzone.scss';
+@use './settings-panel.scss';
 
 * {
   margin: 0;
@@ -386,6 +387,3 @@ canvas {
   }
 }
 
-// Import component styles
-@import './dropzone.scss';
-@import './settings-panel.scss';
