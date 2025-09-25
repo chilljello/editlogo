@@ -35,6 +35,90 @@ const App: React.FC = () => {
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Simple SVG path parser
+  const parseSVGPath = (pathData: string, path: THREE.Path) => {
+    console.log('Parsing SVG path:', pathData);
+    
+    // Split the path data into commands
+    const commands = pathData.match(/[MmLlHhVvCcSsQqTtAaZz][^MmLlHhVvCcSsQqTtAaZz]*/g) || [];
+    console.log('Path commands:', commands);
+    
+    let currentX = 0;
+    let currentY = 0;
+    let startX = 0;
+    let startY = 0;
+    
+    for (const command of commands) {
+      const type = command[0];
+      const coords = command.slice(1).trim().split(/[\s,]+/).filter(Boolean).map(Number);
+      
+      switch (type.toLowerCase()) {
+        case 'm': // Move to (relative)
+          currentX += coords[0] || 0;
+          currentY += coords[1] || 0;
+          if (type === 'M') { // Absolute move
+            currentX = coords[0] || 0;
+            currentY = coords[1] || 0;
+          }
+          path.moveTo(currentX, currentY);
+          startX = currentX;
+          startY = currentY;
+          break;
+          
+        case 'l': // Line to (relative)
+          if (coords.length >= 2) {
+            currentX += coords[0];
+            currentY += coords[1];
+            if (type === 'L') { // Absolute line
+              currentX = coords[0];
+              currentY = coords[1];
+            }
+            path.lineTo(currentX, currentY);
+          }
+          break;
+          
+        case 'h': // Horizontal line
+          currentX += coords[0] || 0;
+          if (type === 'H') { // Absolute horizontal
+            currentX = coords[0] || 0;
+          }
+          path.lineTo(currentX, currentY);
+          break;
+          
+        case 'v': // Vertical line
+          currentY += coords[0] || 0;
+          if (type === 'V') { // Absolute vertical
+            currentY = coords[0] || 0;
+          }
+          path.lineTo(currentX, currentY);
+          break;
+          
+        case 'z': // Close path
+          path.closePath();
+          currentX = startX;
+          currentY = startY;
+          break;
+          
+        default:
+          console.log(`Unsupported SVG command: ${type}`);
+          // For unsupported commands, create a simple line
+          if (coords.length >= 2) {
+            currentX = coords[0];
+            currentY = coords[1];
+            path.lineTo(currentX, currentY);
+          }
+          break;
+      }
+    }
+    
+    // Ensure the path is closed
+    if (!pathData.includes('Z') && !pathData.includes('z')) {
+      path.closePath();
+    }
+    
+    console.log('Parsed path completed');
+  };
+
   const handleDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     setIsDragOver(true);
@@ -87,74 +171,99 @@ const App: React.FC = () => {
             svgString: text
           });
         } else {
-          // Convert SVGResultPaths to THREE.Path objects
+          console.log('SVG paths found, processing...');
+          
+          // The SVGLoader already creates THREE.Path objects
+          // We can use them directly or convert them properly
           const threePaths = svgData.paths.map((svgPath: any, index: number) => {
             console.log(`Processing SVG path ${index}:`, svgPath);
             
-            const path = new THREE.Path();
-            
             try {
-              // The SVGLoader creates THREE.Path objects, so we can use them directly
+              // Check if it's already a THREE.Path with getPoints method
               if (svgPath && typeof svgPath.getPoints === 'function') {
                 console.log(`Using existing THREE.Path for path ${index}`);
-                return svgPath;
-              } else {
-                // Create a new path from the SVG data
-                console.log(`Creating new THREE.Path for path ${index}`);
+                const points = svgPath.getPoints();
+                console.log(`Path ${index} has ${points.length} points`);
                 
-                // Create a simple shape based on the SVG path data
+                if (points.length > 0) {
+                  return svgPath;
+                } else {
+                  // Create a fallback path if no points
+                  const fallbackPath = new THREE.Path();
+                  fallbackPath.moveTo(-10, -10);
+                  fallbackPath.lineTo(10, -10);
+                  fallbackPath.lineTo(10, 10);
+                  fallbackPath.lineTo(-10, 10);
+                  fallbackPath.closePath();
+                  return fallbackPath;
+                }
+              } else {
+                // Create a new THREE.Path from the SVG data
+                console.log(`Creating new THREE.Path for path ${index}`);
+                const newPath = new THREE.Path();
+                
+                // Try to extract path data from userData
                 if (svgPath.userData && svgPath.userData.node) {
                   const node = svgPath.userData.node;
                   console.log('SVG node data:', node);
                   
-                  // Try to extract path data from the SVG node
+                  // Try to get the 'd' attribute (path data)
                   if (node.getAttribute) {
                     const pathData = node.getAttribute('d');
                     console.log('Path data:', pathData);
                     
                     if (pathData) {
-                      // For now, create a simple shape
-                      path.moveTo(-5, -5);
-                      path.lineTo(5, -5);
-                      path.lineTo(5, 5);
-                      path.lineTo(-5, 5);
-                      path.closePath();
+                      // Parse the SVG path data and create THREE.Path
+                      try {
+                        console.log('Parsing SVG path data:', pathData);
+                        parseSVGPath(pathData, newPath);
+                      } catch (parseError) {
+                        console.error('Error parsing path data:', parseError);
+                        // Fallback to simple square
+                        newPath.moveTo(-8, -8);
+                        newPath.lineTo(8, -8);
+                        newPath.lineTo(8, 8);
+                        newPath.lineTo(-8, 8);
+                        newPath.closePath();
+                      }
                     } else {
-                      // Create a simple square
-                      path.moveTo(-5, -5);
-                      path.lineTo(5, -5);
-                      path.lineTo(5, 5);
-                      path.lineTo(-5, 5);
-                      path.closePath();
+                      // No path data, create a simple square
+                      newPath.moveTo(-8, -8);
+                      newPath.lineTo(8, -8);
+                      newPath.lineTo(8, 8);
+                      newPath.lineTo(-8, 8);
+                      newPath.closePath();
                     }
                   } else {
-                    // Create a simple square
-                    path.moveTo(-5, -5);
-                    path.lineTo(5, -5);
-                    path.lineTo(5, 5);
-                    path.lineTo(-5, 5);
-                    path.closePath();
+                    // No node data, create a simple square
+                    newPath.moveTo(-8, -8);
+                    newPath.lineTo(8, -8);
+                    newPath.lineTo(8, 8);
+                    newPath.lineTo(-8, 8);
+                    newPath.closePath();
                   }
                 } else {
-                  // Create a simple square
-                  path.moveTo(-5, -5);
-                  path.lineTo(5, -5);
-                  path.lineTo(5, 5);
-                  path.lineTo(-5, 5);
-                  path.closePath();
+                  // No userData, create a simple square
+                  newPath.moveTo(-8, -8);
+                  newPath.lineTo(8, -8);
+                  newPath.lineTo(8, 8);
+                  newPath.lineTo(-8, 8);
+                  newPath.closePath();
                 }
+                
+                return newPath;
               }
             } catch (error) {
               console.error(`Error processing SVG path ${index}:`, error);
               // Create a simple square as fallback
-              path.moveTo(-5, -5);
-              path.lineTo(5, -5);
-              path.lineTo(5, 5);
-              path.lineTo(-5, 5);
-              path.closePath();
+              const fallbackPath = new THREE.Path();
+              fallbackPath.moveTo(-8, -8);
+              fallbackPath.lineTo(8, -8);
+              fallbackPath.lineTo(8, 8);
+              fallbackPath.lineTo(-8, 8);
+              fallbackPath.closePath();
+              return fallbackPath;
             }
-            
-            return path;
           });
           
           console.log('Converted paths:', threePaths);

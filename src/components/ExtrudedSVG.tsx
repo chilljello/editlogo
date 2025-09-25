@@ -59,27 +59,29 @@ const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
         console.log(`Path ${index} has ${points.length} points`);
         
         if (points.length > 0) {
+          // Use the actual path points
           shape.moveTo(points[0].x, points[0].y);
           for (let i = 1; i < points.length; i++) {
             shape.lineTo(points[i].x, points[i].y);
           }
           shape.closePath();
+          console.log(`Created shape from ${points.length} points`);
         } else {
           // Create a simple fallback shape if no points
           console.log('Creating fallback shape for empty path');
-          shape.moveTo(-10, -10);
-          shape.lineTo(10, -10);
-          shape.lineTo(10, 10);
-          shape.lineTo(-10, 10);
+          shape.moveTo(-8, -8);
+          shape.lineTo(8, -8);
+          shape.lineTo(8, 8);
+          shape.lineTo(-8, 8);
           shape.closePath();
         }
       } catch (error) {
         console.error(`Error processing path ${index}:`, error);
         // Create a simple fallback shape
-        shape.moveTo(-10, -10);
-        shape.lineTo(10, -10);
-        shape.lineTo(10, 10);
-        shape.lineTo(-10, 10);
+        shape.moveTo(-8, -8);
+        shape.lineTo(8, -8);
+        shape.lineTo(8, 8);
+        shape.lineTo(-8, 8);
         shape.closePath();
       }
       
