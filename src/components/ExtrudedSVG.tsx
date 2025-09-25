@@ -108,6 +108,9 @@ const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
     const center = geometry.boundingBox!.getCenter(new THREE.Vector3());
     geometry.translate(-center.x, -center.y, -center.z);
 
+    // Fix orientation - rotate to correct Y-axis (SVG Y is flipped compared to 3D)
+    geometry.rotateX(Math.PI);
+    
     // Scale to fit in view
     const size = geometry.boundingBox!.getSize(new THREE.Vector3());
     const maxDimension = Math.max(size.x, size.y, size.z);
