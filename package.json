@@ -1,0 +1,28 @@
+{
+  "name": "svg-3d-extruder",
+  "version": "1.0.0",
+  "description": "3D SVG Extruder with React and Three.js",
+  "main": "src/index.tsx",
+  "scripts": {
+    "dev": "bun run --bun vite",
+    "build": "bun run --bun vite build",
+    "preview": "bun run --bun vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "three": "^0.158.0",
+    "@react-three/fiber": "^8.15.12",
+    "@react-three/drei": "^9.88.13",
+    "lucide-react": "^0.294.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@types/three": "^0.158.3",
+    "@vitejs/plugin-react": "^4.2.1",
+    "sass": "^1.93.2",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
+  }
+}

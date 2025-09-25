@@ -1,0 +1,139 @@
+// Drop zone styles
+.dropzone {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  height: 100vh;
+  width: 100vw;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+
+  border: 6px dashed #cbd5e0;
+  &.drag-over {
+    margin-top: 70px;
+    border-color: #4299e1;
+    background: rgba(66, 153, 225, 0.1);
+    transform: scale(1.02);
+  }
+}
+
+// Legacy drag-drop-zone for backward compatibility
+.drag-drop-zone {
+
+  transition: all 0.3s ease;
+  border: 2px dashed #cbd5e0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+
+  &.drag-over {
+    border-color: #4299e1;
+    background: rgba(66, 153, 225, 0.1);
+    transform: scale(1.02);
+  }
+}
+
+// Drop zone content styling
+.drop-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  
+  .upload-icon {
+    width: 4rem;
+    height: 4rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1rem;
+  }
+  
+  .drop-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+  
+  .drop-description {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1.5rem;
+  }
+  
+  .file-input {
+    display: none;
+  }
+}
+
+// Responsive drop zone
+@media (max-width: 768px) {
+  .dropzone {
+    padding: 1rem;
+    
+    .upload-icon {
+      width: 3rem;
+      height: 3rem;
+    }
+    
+    .drop-title {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+// Dark mode support for drop zone
+@media (prefers-color-scheme: dark) {
+  .dropzone {
+    border-color: #4a5568;
+    
+    &.drag-over {
+      border-color: #63b3ed;
+      background: rgba(99, 179, 237, 0.1);
+    }
+  }
+  
+  .drag-drop-zone {
+    border-color: #4a5568;
+    
+    &.drag-over {
+      border-color: #63b3ed;
+      background: rgba(99, 179, 237, 0.1);
+    }
+  }
+}
+
+// High contrast mode for drop zone
+@media (prefers-contrast: high) {
+  .dropzone {
+    border-width: 3px;
+    border-color: #000;
+    
+    &.drag-over {
+      border-color: #0066cc;
+      background: rgba(0, 102, 204, 0.2);
+    }
+  }
+}
+
+// Reduced motion for drop zone
+@media (prefers-reduced-motion: reduce) {
+  .dropzone {
+    transition: none;
+    
+    &.drag-over {
+      transform: none;
+    }
+  }
+  
+  .drag-drop-zone {
+    transition: none;
+    
+    &.drag-over {
+      transform: none;
+    }
+  }
+}
